@@ -31,12 +31,12 @@ int receive_win = 0;
 
 int stud_slide_window_stop_and_wait(char *pBuffer, int bufferSize, UINT8 messageType)
 {
-	frame *frame = new frame;
+	frame *active_frame = new frame;
 	switch (messageType)
 	{
 	case MSG_TYPE_SEND:
-		*frame = *((frame *)pBuffer);
-		appending_queue.push_back(frame);
+		*active_frame = *((frame *)pBuffer);
+		appending_queue.push_back(active_frame);
 		if (send_win < WINDOW_SIZE_STOP_WAIT)
 		{
 			SendFRAMEPacket((unsigned char *)pBuffer, bufferSize);
@@ -45,8 +45,8 @@ int stud_slide_window_stop_and_wait(char *pBuffer, int bufferSize, UINT8 message
 		break;
 
 	case MSG_TYPE_RECEIVE:
-		*frame = *((frame *)pBuffer);
-		unsigned int ack = ntohl(frame->head.ack);
+		*active_frame = *((frame *)pBuffer);
+		unsigned int ack = ntohl(active_frame->head.ack);
 		frame *local = appending_queue.front();
 		if (ntohl(local->head.seq) == ack)
 		{
@@ -62,11 +62,12 @@ int stud_slide_window_stop_and_wait(char *pBuffer, int bufferSize, UINT8 message
 		break;
 
 	case MSG_TYPE_TIMEOUT:
-		*frame = appending_queue.front();
-		unsigned int seq = ntohl(frame->head.seq);
-		unsigned int timeout_seq = ntohl(*(unsigned int *)pBuffer) if (seq == timeout_seq)
+		active_frame = appending_queue.front();
+		unsigned int seq = ntohl(active_frame->head.seq);
+		unsigned int timeout_seq = ntohl(*(unsigned int *)pBuffer); 
+		if (seq == timeout_seq)
 		{
-			SendFRAMEPacket((unsigned char *)frame, frame->size);
+			SendFRAMEPacket((unsigned char *)active_frame, active_frame->size);
 		}
 		break;
 
